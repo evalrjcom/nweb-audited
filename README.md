@@ -1,12 +1,13 @@
 # nweb-audited
 
-Hardened version of Nigel Griffiths' tiny static-file web server (nweb) from the nmon project, plus a Rust port of the original.
+Hardened version of Nigel Griffiths' tiny static-file web server (nweb) from the nmon project, plus Rust ports.
 
 ## Files
 
 - `nweb25.c` — Original version 25 (July 2016) from SourceForge.
 - `nweb.c` — Audited and hardened version (v26). Fixes privilege drop, path traversal/encoding checks, HTTP compliance, proper SIGCHLD reaping, safer parsing, and daemonization.
 - `nweb25.rs` — Rust port of the original nweb25.c (std only, threads instead of fork, portable).
+- `nweb.rs` — Rust port of the hardened nweb (v26). Includes path safety (`..` and `%` rejection), proper HTTP, and best-effort privilege drop on Unix.
 
 ## Build and run
 
@@ -17,13 +18,19 @@ cc -O2 -Wall -o nweb nweb.c
 ./nweb 8181 /path/to/webroot &
 ```
 
-### Rust
+### Rust (hardened)
+```bash
+rustc -O nweb.rs -o nweb
+./nweb 8181 /path/to/webroot
+```
+
+### Rust (original port)
 ```bash
 rustc -O nweb25.rs -o nweb
 ./nweb 8181 /path/to/webroot
 ```
 
-## Audit summary (key fixes in nweb.c)
+## Audit summary (key fixes in nweb.c / nweb.rs)
 
 - Drop privileges after `chroot` if running as root.
 - Reject `%` encodings and enforce leading `/` + no `..`.
